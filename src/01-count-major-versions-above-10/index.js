@@ -1,36 +1,27 @@
-/**
- * Make the following POST request with either axios or node-fetch:
-
-POST url: http://ambush-api.inyourarea.co.uk/ambush/intercept
-BODY: {
-    "url": "https://api.npms.io/v2/search/suggestions?q=react",
-    "method": "GET",
-    "return_payload": true
-}
-
- *******
-
-The results should have this structure:
-{
-    "status": 200.0,
-    "location": [
-      ...
-    ],
-    "from": "CACHE",
-    "content": [
-      ...
-    ]
-}
-
- ******
-
+/*
  *  With the results from this request, inside "content", count
  *  the number of packages that have a MAJOR semver version 
  *  greater than 10.x.x
  */
+const fetchPackageJson = require('../fetchPackageJson');
+const url = require('../fetchParams').url;
+const body = require('../fetchParams').body;
+
+const extractMajorVersionNumber = (version) => {
+  const majorVersion = version.split('.')[0];
+  return parseInt(majorVersion, 10);
+}
 
 module.exports = async function countMajorVersionsAbove10() {
-  // TODO
+  let count = 0;
 
-  return count
+  const json = await fetchPackageJson(url, body);
+
+  json.content.forEach(element => {
+    if (extractMajorVersionNumber(element.package.version) >= 10) {
+      count ++;
+    }
+  });
+
+  return count;
 };
