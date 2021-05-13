@@ -1,27 +1,4 @@
-/**
- * Make the following POST request with either axios or node-fetch:
-
-POST url: http://ambush-api.inyourarea.co.uk/ambush/intercept
-BODY: {
-    "url": "https://api.npms.io/v2/search/suggestions?q=react",
-    "method": "GET",
-    "return_payload": true
-}
-
- *******
-
-The results should have this structure:
-{
-    "status": 200.0,
-    "location": [
-      ...
-    ],
-    "from": "CACHE",
-    "content": [
-      ...
-    ]
-}
-
+/*
  ******
 
  * With the results from this request, inside "content", 
@@ -39,8 +16,41 @@ The results should have this structure:
  * be in alphabetical order.
  */
 
-module.exports = async function organiseMaintainers() {
-  // TODO
+const fetchPackageJson = require('../fetchPackageJson');
+const url = require('../fetchParams').url;
+const body = require('../fetchParams').body;
 
-  return maintainers
+const createMaintainersMap = (array) => {
+  let maintainersMap = new Map();
+  array.forEach(element => {
+    const packageName = element.package.name;
+    const maintainers = element.package.maintainers;
+    maintainers.forEach(element => {
+      if (maintainersMap.has(element.username)) {
+        maintainersMap.get(element.username).push(packageName);
+      } else {
+        maintainersMap.set(element.username, [packageName]);
+      }
+    })
+  })
+  return maintainersMap;
+};
+
+const createArrayFromMap = (map) => {
+  let result = [];
+  for (const [key, value] of map.entries()) {
+    value.sort();
+    result.push({ username: key, packageNames: value });
+    result.sort((a, b) => a.username.localeCompare(b.username));
+  }
+  return result;
+};
+
+module.exports = async function organiseMaintainers() {
+  const json = await fetchPackageJson(url, body);
+
+  const maintainersMap = createMaintainersMap(json.content);
+  const result = createArrayFromMap(maintainersMap);
+
+  return result;
 };
