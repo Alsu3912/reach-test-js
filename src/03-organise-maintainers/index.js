@@ -22,9 +22,11 @@ const body = require('../fetchParams').body;
 
 const createMaintainersMap = (array) => {
   let maintainersMap = new Map();
+
   array.forEach(element => {
     const packageName = element.package.name;
     const maintainers = element.package.maintainers;
+
     maintainers.forEach(element => {
       if (maintainersMap.has(element.username)) {
         maintainersMap.get(element.username).push(packageName);
@@ -32,17 +34,21 @@ const createMaintainersMap = (array) => {
         maintainersMap.set(element.username, [packageName]);
       }
     })
-  })
+  });
+
   return maintainersMap;
 };
 
-const createArrayFromMap = (map) => {
+const transformMap = (map) => {
   let result = [];
+
   for (const [key, value] of map.entries()) {
     value.sort();
     result.push({ username: key, packageNames: value });
-    result.sort((a, b) => a.username.localeCompare(b.username));
-  }
+  };
+
+  result.sort((a, b) => a.username.localeCompare(b.username));
+
   return result;
 };
 
@@ -50,7 +56,7 @@ module.exports = async function organiseMaintainers() {
   const json = await fetchPackageJson(url, body);
 
   const maintainersMap = createMaintainersMap(json.content);
-  const result = createArrayFromMap(maintainersMap);
+  const result = transformMap(maintainersMap);
 
   return result;
 };

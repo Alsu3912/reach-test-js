@@ -16,10 +16,10 @@ module.exports = async function countMajorVersionsAbove10() {
   let count = 0;
 
   const json = await fetchPackageJson(url, body);
-
+  
   json.content.forEach(element => {
-    if (extractMajorVersionNumber(element.package.version) >= 10) {
-      count ++;
+    if (extractMajorVersionNumber(element.package.version) > 10) {
+      count++;
     }
   });
 
